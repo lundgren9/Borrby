@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-stödd plananalys – Detaljplan Borrby 58:3 och S:35</title>
+    <style>
+        /* ===== GRUNDLÄGGANDE STILAR ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #1F4E79;
+            --primary-light: #2E75B6;
+            --secondary: #4A7C59;
+            --accent: #E8B84A;
+            --text: #333;
+            --text-light: #666;
+            --bg: #f8f9fa;
+            --white: #fff;
+            --border: #e0e0e0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: var(--bg);
+        }
+        
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: var(--white);
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+        
+        .header .badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        /* ===== NAVIGATION ===== */
+        .nav-buttons {
+            background: var(--white);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-buttons-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        
+        .nav-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.secondary {
+            background: var(--secondary);
+        }
+        
+        .nav-btn.secondary:hover {
+            background: #5a9469;
+        }
+        
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* ===== SECTIONS ===== */
+        section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        section h2 {
+            color: var(--primary);
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--accent);
+        }
+        
+        section h3 {
+            color: var(--primary-light);
+            font-size: 1.25em;
+            margin: 25px 0 15px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        /* ===== DOKUMENT-KORT ===== */
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .doc-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--text);
+        }
+        
+        .doc-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(31,78,121,0.15);
+        }
+        
+        .doc-card .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .doc-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .doc-card p {
+            font-size: 0.9em;
+            color: var(--text-light);
+            margin-bottom: 0;
+        }
+        
+        .doc-card .format {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 12px;
+            background: var(--bg);
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        /* ===== PROCESS-STEG ===== */
+        .process-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            padding: 20px 15px;
+            background: var(--bg);
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .step::after {
+            content: "→";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.5em;
+        }
+        
+        .step:last-child::after {
+            display: none;
+        }
+        
+        .step-number {
+            width: 35px;
+            height: 35px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+        
+        .step h4 {
+            color: var(--primary);
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+        
+        .step p {
+            font-size: 0.85em;
+            color: var(--text-light);
+            margin: 0;
+        }
+        
+        /* ===== INFORUTOR ===== */
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        
+        .info-box.warning {
+            background: #fff8e6;
+            border-left-color: var(--accent);
+        }
+        
+        .info-box h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        /* ===== REFERENSER ===== */
+        .references {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+        
+        .references h4 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .references ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .references li {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .references li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+        
+        .references a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+        
+        .references a:hover {
+            text-decoration: underline;
+        }
+        
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--white);
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .modal-header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 20px 25px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.8em;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-body h4 {
+            color: var(--primary);
+            margin: 20px 0 10px 0;
+        }
+        
+        .modal-body h4:first-child {
+            margin-top: 0;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .prompt-box {
+            background: #f5f5f5;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+        
+        .footer a {
+            color: var(--primary);
+        }
+        
+        /* ===== RESPONSIV ===== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .step::after {
+                display: none;
+            }
+            
+            section {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <h1>AI-stödd analys av granskningsyttranden</h1>
+            <p class="subtitle">Detaljplan för del av Borrby 58:3 och Borrby S:35, Borrbystrand<br>Simrishamns kommun, Skåne län</p>
+            <div class="badges">
+                <span class="badge">📍 Borrbystrand</span>
+                <span class="badge">📐 42 300 m²</span>
+                <span class="badge">📅 December 2025</span>
+                <span class="badge">🤖 AI-genererat</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- NAVIGERING -->
+    <nav class="nav-buttons">
+        <div class="nav-buttons-inner">
+            <a href="#dokument" class="nav-btn">📄 Dokument</a>
+            <a href="#om-fallet" class="nav-btn">🏖️ Om Borrby-fallet</a>
+            <a href="#planprocess" class="nav-btn">⚖️ Planprocessen</a>
+            <button class="nav-btn secondary" onclick="openModal('teknik-modal')">🔧 Teknik</button>
+            <button class="nav-btn secondary" onclick="openModal('prompt-modal')">💬 Prompt</button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- DOKUMENT-SEKTION -->
+        <section id="dokument">
+            <h2>📄 Skapade dokument</h2>
+            <p>Följande dokument har genererats med hjälp av AI-verktyg baserat på antagandehandlingen och inkomna granskningsyttranden. Dokumenten är avsedda att användas som arbetsmaterial och underlag för vidare diskussion.</p>
+            
+            <div class="doc-grid">
+                <a href="Sammanstallning_granskningsyttranden_Borrby.docx" class="doc-card">
+                    <div class="icon">📝</div>
+                    <h4>Sammanställning</h4>
+                    <p>Utförlig sammanställning av alla yttranden i löpande text med analys och förslag till lösningar.</p>
+                    <span class="format">DOCX</span>
+                </a>
+                
+                <a href="Granskningsyttranden_Borrby_tabell.xlsx" class="doc-card">
+                    <div class="icon">📊</div>
+                    <h4>Filtrerbar tabell</h4>
+                    <p>Excel-fil med alla yttranden kategoriserade för filtrering och sortering.</p>
+                    <span class="format">XLSX</span>
+                </a>
+                
+                <a href="Planillustration_Borrby_markanvandning.html" class="doc-card">
+                    <div class="icon">🗺️</div>
+                    <h4>Planillustration</h4>
+                    <p>Interaktiv översikt över markanvändning och identifierade intressekonflikter.</p>
+                    <span class="format">HTML</span>
+                </a>
+                
+                <a href="Principsnitt_Borrby_tillganglighet.html" class="doc-card">
+                    <div class="icon">📐</div>
+                    <h4>Principsnitt</h4>
+                    <p>Sektionsritningar som visar alternativa lösningar för tillgänglighetsanpassning.</p>
+                    <span class="format">HTML</span>
+                </a>
+            </div>
+        </section>
+        
+        <!-- OM FALLET -->
+        <section id="om-fallet">
+            <h2>🏖️ Om Borrby-fallet</h2>
+            
+            <h3>Bakgrund</h3>
+            <p>Detaljplanen för Borrby 58:3 och Borrby S:35 i Borrbystrand, Simrishamns kommun, syftar till att möjliggöra utveckling av området kring Borrbystrands camping. Planområdet omfattar cirka 42 300 kvadratmeter och ligger vid Östersjön i kommunens sydöstra del.</p>
+            
+            <h3>Planens syfte</h3>
+            <p>Detaljplanen har flera syften:</p>
+            <ul style="margin-left: 25px; margin-bottom: 15px;">
+                <li>Möjliggöra tennisbana och minigolfbana för Borrbystrands camping</li>
+                <li>Säkerställa infart till fastigheten Borrby 58:7</li>
+                <li>Ändra huvudmannaskap för viss mark</li>
+                <li>Tillgängliggöra stranden för personer med funktionsnedsättning</li>
+            </ul>
+            
+            <h3>Identifierade intressekonflikter</h3>
+            <p>Under granskningen framkom flera intressekonflikter som behöver hanteras:</p>
+            
+            <div class="info-box warning">
+                <h4>⚠️ Tillgänglighet vs. ålfiskeverksamhet</h4>
+                <p>Den föreslagna gångförbindelsen för rörelsehindrade hamnar i konflikt med den etablerade ålfiskeverksamheten vid ålaboden. Ålfisket i södra Sverige är en UNESCO-kulturarvskandidat. Sakägare har presenterat tre alternativa lösningar, varav alternativ 3 (vändplatsen vid Granhyddesvägen) rekommenderas.</p>
+            </div>
+            
+            <div class="info-box">
+                <h4>ℹ️ Uppdatering 2025</h4>
+                <p>Bassängen vid Borrby strand har totalrenoverats och öppnade i juni 2025 med ett nytt kafé. Detta innebär att den kritik som framfördes om eftersatt underhåll (maj 2024) inte längre är aktuell.</p>
+            </div>
+            
+            <h3>Yttranden</h3>
+            <p>Under granskningstiden inkom yttranden från fyra myndigheter (Lantmäteriet, Länsstyrelsen Skåne, Trafikverket och Global Connect) samt fyra sakägare med olika perspektiv på planförslaget.</p>
+        </section>
+        
+        <!-- PLANPROCESSEN -->
+        <section id="planprocess">
+            <h2>⚖️ Detaljplaneprocessen i Sverige</h2>
+            
+            <p>Detaljplaner reglerar hur mark och vatten får användas och hur bebyggelsen ska utformas inom ett avgränsat område. Processen för att ta fram en detaljplan styrs av plan- och bygglagen (PBL) och syftar till att säkerställa att alla berörda parter får möjlighet att påverka planens utformning (Boverket, 2024a).</p>
+            
+            <h3>Planprocessens steg</h3>
+            <p>Sedan 1 januari 2015 gäller nya regler för hur detaljplaner tas fram. Det finns två huvudsakliga förfaranden: standardförfarande och utökat förfarande. Borrby-planen handläggs med standardförfarande.</p>
+            
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>Planbesked</h4>
+                    <p>Kommun tar ställning till ansökan</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>Samråd</h4>
+                    <p>Berörda får lämna synpunkter</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>Granskning</h4>
+                    <p>Justerat förslag visas</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h4>Antagande</h4>
+                    <p>Beslut i kommunfullmäktige</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h4>Laga kraft</h4>
+                    <p>Planen blir juridiskt bindande</p>
+                </div>
+            </div>
+            
+            <h3>Sakägares roll</h3>
+            <p>Sakägare är personer eller organisationer som är direkt berörda av planförslaget, till exempel fastighetsägare inom eller i anslutning till planområdet. Under samråd och granskning har sakägare rätt att lämna synpunkter som kommunen måste bemöta. Om en sakägare har framfört synpunkter som inte tillgodosetts har denne rätt att överklaga beslutet om antagande (Boverket, 2024b).</p>
+            
+            <h3>Länsstyrelsens roll</h3>
+            <p>Länsstyrelsen bevakar statliga intressen under planprocessen och kan överpröva kommunens beslut om planen strider mot riksintressen, miljökvalitetsnormer, strandskydd eller andra viktiga intressen enligt 11 kap. 10–11 §§ PBL. I Borrby-fallet meddelade Länsstyrelsen Skåne att de inte avser överpröva planen (Boverket, 2025).</p>
+            
+            <div class="references">
+                <h4>Referenser – Planprocessen</h4>
+                <ul>
+                    <li>Boverket (2024a) <em>Detaljplanering</em>. PBL kunskapsbanken. Tillgänglig: <a href="https://www.boverket.se/sv/PBL-kunskapsbanken/planering/detaljplan/" target="_blank">https://www.boverket.se/sv/PBL-kunskapsbanken/planering/detaljplan/</a> [Hämtad 2025-12-30].</li>
+                    <li>Boverket (2024b) <em>Detaljplaneprocessen</em>. PBL kunskapsbanken. Tillgänglig: <a href="https://www.boverket.se/sv/PBL-kunskapsbanken/planering/detaljplan/detaljplaneprocessen/" target="_blank">https://www.boverket.se/sv/PBL-kunskapsbanken/planering/detaljplan/detaljplaneprocessen/</a> [Hämtad 2025-12-30].</li>
+                    <li>Boverket (2025) <em>Roller och ansvar</em>. PBL kunskapsbanken. Tillgänglig: <a href="https://www.boverket.se/sv/PBL-kunskapsbanken/detaljplan/roller-och-ansvar/" target="_blank">https://www.boverket.se/sv/PBL-kunskapsbanken/detaljplan/roller-och-ansvar/</a> [Hämtad 2025-12-30].</li>
+                    <li>Plan- och bygglag (2010:900). Stockholm: Finansdepartementet.</li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- ANVÄNDNING -->
+        <section>
+            <h2>💡 Hur kan AI användas i planprocessen?</h2>
+            <p>Detta projekt demonstrerar hur generativ AI kan användas för att effektivisera hanteringen av granskningsyttranden i detaljplaneprocessen. AI-verktyg kan hjälpa till med:</p>
+            
+            <ul style="margin-left: 25px; margin-bottom: 15px;">
+                <li><strong>Sammanställning och kategorisering:</strong> Strukturera stora mängder text från olika avsändare</li>
+                <li><strong>Identifiering av intressekonflikter:</strong> Hitta motstridiga intressen och synpunkter</li>
+                <li><strong>Visualisering:</strong> Skapa illustrationer som gör komplexa sammanhang begripliga</li>
+                <li><strong>Förslag till lösningar:</strong> Analysera alternativ baserat på inkomna synpunkter</li>
+            </ul>
+            
+            <div class="info-box warning">
+                <h4>⚠️ Viktigt att tänka på</h4>
+                <p>AI-genererat material ska alltid granskas av sakkunniga. AI kan göra fel, missförstå sammanhang eller sakna viktig kontextuell information. Dokumenten i detta projekt är arbetsmaterial och ska inte ses som juridiskt bindande eller fullständiga.</p>
+            </div>
+        </section>
+    </div>
+    
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>Skapad december 2025 med stöd av Claude (Anthropic)</p>
+        <p>Simrishamns kommun | <a href="https://www.simrishamn.se" target="_blank">www.simrishamn.se</a></p>
+    </footer>
+    
+    <!-- TEKNIK-MODAL -->
+    <div class="modal-overlay" id="teknik-modal" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>🔧 Teknik som använts</h3>
+                <button class="modal-close" onclick="closeModal('teknik-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Dokumenten i detta projekt har skapats med hjälp av generativ AI (Claude, Anthropic) som har genererat kod för att producera de olika filformaten. Nedan beskrivs de tekniska komponenterna.</p>
+                
+                <h4>AI-modell</h4>
+                <p><strong>Claude</strong> (Anthropic) – en stor språkmodell som kan förstå och generera text, kod och strukturerad data. Claude har använts för att analysera antagandehandlingen och yttrandena, samt för att generera kod som skapar dokumenten.</p>
+                
+                <h4>Word-dokument (.docx)</h4>
+                <p>Word-dokumentet skapades med hjälp av <strong>docx.js</strong> – ett JavaScript-bibliotek för att generera Word-dokument programmatiskt. Biblioteket möjliggör skapande av formaterade dokument med rubriker, listor, tabeller och sidhuvud/sidfot utan att behöva Microsoft Word (Dolanmiu, 2024).</p>
+                <div class="code-block">
+const { Document, Packer, Paragraph, TextRun } = require('docx');
+const doc = new Document({ sections: [{ children: [...] }] });
+Packer.toBuffer(doc).then(buffer => fs.writeFileSync("dokument.docx", buffer));
+                </div>
+                
+                <h4>Excel-fil (.xlsx)</h4>
+                <p>Excel-filen skapades med <strong>openpyxl</strong> – ett Python-bibliotek för att läsa och skriva Excel-filer i formaten xlsx/xlsm. Biblioteket stödjer formatering, formler, autofilter och diagram (Gazoni & Clark, 2024).</p>
+                <div class="code-block">
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill
+
+wb = Workbook()
+ws = wb.active
+ws['A1'] = "Rubrik"
+ws.auto_filter.ref = "A1:N10"
+wb.save("tabell.xlsx")
+                </div>
+                
+                <h4>Interaktiva illustrationer (.html)</h4>
+                <p>Illustrationerna skapades som <strong>HTML/SVG</strong>-filer med inbäddad CSS och JavaScript. SVG (Scalable Vector Graphics) är ett XML-baserat format för vektorgrafik som kan skalas utan kvalitetsförlust och som kan göras interaktivt med JavaScript (W3C, 2011).</p>
+                <div class="code-block">
+&lt;svg viewBox="0 0 800 600"&gt;
+  &lt;rect class="area" data-area="natur" fill="#90b77d" /&gt;
+  &lt;text class="area-label"&gt;NATUR&lt;/text&gt;
+&lt;/svg&gt;
+&lt;script&gt;
+  document.querySelectorAll('.area').forEach(el => {
+    el.addEventListener('mouseenter', showTooltip);
+  });
+&lt;/script&gt;
+                </div>
+                
+                <h4>Arbetsflöde</h4>
+                <ol style="margin-left: 25px;">
+                    <li>AI analyserar antagandehandling och yttranden</li>
+                    <li>AI genererar JavaScript/Python-kod</li>
+                    <li>Koden exekveras för att skapa dokumenten</li>
+                    <li>Dokumenten granskas och justeras vid behov</li>
+                </ol>
+                
+                <div class="references">
+                    <h4>Referenser – Teknik</h4>
+                    <ul>
+                        <li>Dolanmiu (2024) <em>docx – Generate .docx documents with JavaScript</em>. Tillgänglig: <a href="https://docx.js.org/" target="_blank">https://docx.js.org/</a> [Hämtad 2025-12-30].</li>
+                        <li>Gazoni, E. & Clark, C. (2024) <em>openpyxl – A Python library to read/write Excel 2010 xlsx/xlsm files</em>. Tillgänglig: <a href="https://openpyxl.readthedocs.io/" target="_blank">https://openpyxl.readthedocs.io/</a> [Hämtad 2025-12-30].</li>
+                        <li>npm (2024) <em>docx package</em>. Tillgänglig: <a href="https://www.npmjs.com/package/docx" target="_blank">https://www.npmjs.com/package/docx</a> [Hämtad 2025-12-30].</li>
+                        <li>PyPI (2024) <em>openpyxl</em>. Tillgänglig: <a href="https://pypi.org/project/openpyxl/" target="_blank">https://pypi.org/project/openpyxl/</a> [Hämtad 2025-12-30].</li>
+                        <li>W3C (2011) <em>Scalable Vector Graphics (SVG) 1.1</em>. 2nd ed. Tillgänglig: <a href="https://www.w3.org/TR/SVG11/" target="_blank">https://www.w3.org/TR/SVG11/</a> [Hämtad 2025-12-30].</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PROMPT-MODAL -->
+    <div class="modal-overlay" id="prompt-modal" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>💬 Prompt som startade processen</h3>
+                <button class="modal-close" onclick="closeModal('prompt-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Nedan visas en kondenserad version av den prompt som användes för att starta AI-analysen. Promten innehåller flera viktiga delar som gör att AI:n kan utföra uppgiften effektivt.</p>
+                
+                <h4>Den kondenserade prompten</h4>
+                <div class="prompt-box">ROLL & TON
+Du är en neutral, faktagranskande plananalytiker och 
+illustratör med svensk PBL/MB-kompetens. Du jobbar 
+tydligt, källspårbart och pedagogiskt för en allmän 
+målgrupp.
+
+SYFTE
+1) Sammanställ alla inkomna yttranden och kategorisera 
+   dem på ett konsekvent, spårbart och filtrerbart sätt.
+2) Ta fram publika, begripliga exempelillustrationer 
+   (plan och sektion) som visar genomförandeexempel.
+
+UNDERLAG
+[Bifogat: Antagandehandling + Yttranden från granskning]
+
+Planområde: Borrby 58:3 och S:35, Borrbystrand
+Kommun: Simrishamn
+Storlek: ~42 300 m²
+
+YTTRANDEN FRÅN:
+Myndigheter: Lantmäteriet, Länsstyrelsen, Trafikverket
+Sakägare: Helena Zander Ögren, Christer Jönsson, 
+          Borrby Byalag, Rolf Johansson
+
+SÄRSKILD INFORMATION
+Bassängen verkar ha renoverats och öppnat 2025.
+Undersök om detta stämmer.
+
+ARBETSORDNING
+A) Undersök området via internet + analysera handlingar
+B) Sammanställ yttranden i Word + Excel
+C) Ta fram illustrationer
+
+Fråga om något är oklart.</div>
+                
+                <h4>Viktiga delar i prompten</h4>
+                <p>En effektiv prompt för denna typ av uppgift bör innehålla följande komponenter:</p>
+                
+                <p><span class="highlight">1. Roll och ton</span> – Definiera vilken expertroll AI:n ska anta. I detta fall: neutral plananalytiker med PBL-kompetens. Detta styr språkbruk och perspektiv.</p>
+                
+                <p><span class="highlight">2. Tydligt syfte</span> – Beskriv konkret vad som ska produceras. Undvik vaga formuleringar. Specificera format (Word, Excel, illustrationer).</p>
+                
+                <p><span class="highlight">3. Kontext och underlag</span> – Bifoga relevanta dokument och beskriv vad de innehåller. AI:n kan inte gissa vad som finns i dokumenten.</p>
+                
+                <p><span class="highlight">4. Struktur för yttranden</span> – Lista avsändare och kategorier för att underlätta systematisering.</p>
+                
+                <p><span class="highlight">5. Särskild information</span> – Flagga för sådant som behöver verifieras eller som har förändrats sedan dokumenten skrevs.</p>
+                
+                <p><span class="highlight">6. Arbetsordning</span> – Föreslå en logisk ordning för arbetet. AI:n kan justera vid behov men det ger en startpunkt.</p>
+                
+                <p><span class="highlight">7. Öppning för frågor</span> – Uppmana AI:n att fråga om något är oklart istället för att gissa.</p>
+                
+                <h4>Kompletterande instruktioner</h4>
+                <p>Efter den initiala prompten gavs kompletterande instruktioner om:</p>
+                <ul style="margin-left: 25px;">
+                    <li>Önskat format: Både Word (löpande text) och Excel (filtrerbar tabell)</li>
+                    <li>Illustrationstyper: Både planillustration och principsnitt</li>
+                    <li>Prioriterat perspektiv: Fokus på intressekonflikter och alternativa lösningar</li>
+                    <li>Språk: Svenska</li>
+                    <li>Uppdatering: Ta hänsyn till att bassängen renoverats 2025</li>
+                </ul>
+                
+                <div class="info-box">
+                    <h4>💡 Tips för bra prompts</h4>
+                    <p>Var specifik, ge kontext, dela upp komplexa uppgifter i steg, och be AI:n fråga om något är oklart. Iterera och förtydliga vid behov – AI-arbete är en dialog, inte en engångsförfrågan.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal-funktioner
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function closeModalOnOverlay(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Stäng modal med Escape-tangenten
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Smooth scroll för navigering
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
